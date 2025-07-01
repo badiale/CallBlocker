@@ -12,3 +12,7 @@ To solve this, no third party is used to classify if a phone is legitimate or no
 Just add the phone numbers you trust in your contact list, and you are good to go.
 
 When companies find out your phone number, it is only fair that they share theirs with you, if you want to receive their calls.
+
+## License
+
+This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
