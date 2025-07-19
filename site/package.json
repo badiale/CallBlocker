@@ -1,0 +1,10 @@
+{
+  "scripts": {
+    "fb-login": "firebase login",
+    "fb-init": "firebase init",
+    "fb-deploy": "firebase deploy"
+  },
+  "dependencies": {
+    "firebase-tools": "^14.11.0"
+  }
+}
