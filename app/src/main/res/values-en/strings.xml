@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">CallBlocker</string>
+    <string name="call_log">Call log</string>
     <string name="permissions">Permissions</string>
     <string name="roles">Roles</string>
     <string name="system">System</string>
@@ -12,4 +13,5 @@
     <string name="role_call_screening_permission_description">Permission needed to be able to block calls. A dialog will be displayed asking to choose this app as your default call screening app.</string>
     <string name="action_request_ignore_battery_optimizations">Turn off battery optimizations</string>
     <string name="action_request_ignore_battery_optimizations_description">With battery optimizations enabled, the app can be interrupted at any moment, disrupting the app ability to block calls.</string>
+    <string name="navigation">Navigation</string>
 </resources>

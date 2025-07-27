@@ -1,6 +1,9 @@
 package dev.badiale.callblocker.presentation.screens
 
-sealed class Screen(val route: String) {
-    object CallLog : Screen("call-log")
-    object ConfigurationPermission : Screen("configuration/permission")
+import androidx.annotation.StringRes
+import dev.badiale.callblocker.R
+
+sealed class Screen(val route: String, @StringRes val name: Int) {
+    object CallLog : Screen("call-log", R.string.call_log)
+    object ConfigurationPermission : Screen("configuration/permission", R.string.permissions)
 }

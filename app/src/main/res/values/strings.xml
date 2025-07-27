@@ -1,5 +1,6 @@
 <resources>
     <string name="app_name">CallBlocker</string>
+    <string name="call_log">Registro de chamadas</string>
     <string name="permissions">Permissões</string>
     <string name="roles">Papéis</string>
     <string name="system">Sistema</string>
@@ -11,4 +12,5 @@
     <string name="role_call_screening_permission_description">Permissão necessária para bloquear chamadas.\nSerá exibida uma tela com algumas opções, e é necessário escolher este aplicativo.</string>
     <string name="action_request_ignore_battery_optimizations">Desativar otimizações de bateria</string>
     <string name="action_request_ignore_battery_optimizations_description">Com as otimizações ativadas, o aplicativo pode ser interrompido a qualquer momento, o que pode causar mal funcionamento na detecção das chamadas.</string>
+    <string name="navigation">Navegação</string>
 </resources>
