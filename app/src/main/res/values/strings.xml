@@ -1,3 +1,14 @@
 <resources>
     <string name="app_name">CallBlocker</string>
+    <string name="permissions">Permissões</string>
+    <string name="roles">Papéis</string>
+    <string name="system">Sistema</string>
+    <string name="read_contacts_permission">Ler contatos</string>
+    <string name="read_contacts_permission_description">Permissão necessária para determinar os contatos conhecidos, que não deverão ser bloqueados</string>
+    <string name="request_ignore_battery_optimizations_permission">Alterar configurações de bateria</string>
+    <string name="request_ignore_battery_optimizations_permission_description">Permite solicitar a desativação das otimizações de bateria. Esta permissão é uma conveniência, porém não é estritamente necessária para o funcionamento, podendo desativar as otimizações pelas configurações do sistema.</string>
+    <string name="role_call_screening_permission">Definir como bloqueador de chamadas</string>
+    <string name="role_call_screening_permission_description">Permissão necessária para bloquear chamadas.\nSerá exibida uma tela com algumas opções, e é necessário escolher este aplicativo.</string>
+    <string name="action_request_ignore_battery_optimizations">Desativar otimizações de bateria</string>
+    <string name="action_request_ignore_battery_optimizations_description">Com as otimizações ativadas, o aplicativo pode ser interrompido a qualquer momento, o que pode causar mal funcionamento na detecção das chamadas.</string>
 </resources>

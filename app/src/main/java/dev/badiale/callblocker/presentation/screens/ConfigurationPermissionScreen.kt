@@ -10,23 +10,23 @@ import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
+import dev.badiale.callblocker.R
 import dev.badiale.callblocker.presentation.components.PermissionRequestUI
 import dev.badiale.callblocker.presentation.components.PermissionUI
 import dev.badiale.callblocker.presentation.components.RoleUI
@@ -35,65 +35,54 @@ import kotlinx.coroutines.flow.MutableStateFlow
 @Preview
 @Composable
 fun ConfigurationPermissionScreen() {
-    val tabs = listOf("Permissions", "Roles", "System")
-    var selectedTabIndex by remember { mutableIntStateOf(0) }
+    Column(
+        modifier = Modifier
+            .verticalScroll(rememberScrollState())
+            .padding(16.dp)
+    ) {
+        PermissionsTab()
+        Spacer(Modifier.height(4.dp))
 
-    Column {
-        TabRow(selectedTabIndex = selectedTabIndex) {
-            tabs.forEachIndexed { index, title ->
-                Tab(
-                    selected = selectedTabIndex == index,
-                    onClick = { selectedTabIndex = index },
-                    text = { Text(title) }
-                )
-            }
-        }
+        RolesTab()
+        Spacer(Modifier.height(4.dp))
 
-        when (selectedTabIndex) {
-            0 -> PermissionsTab()
-            1 -> RolesTab()
-            2 -> SystemTab()
-        }
+        SystemTab()
     }
 
 }
 
 @Composable
 fun PermissionsTab() {
-    Column(
-        modifier = Modifier
-            .verticalScroll(rememberScrollState())
-            .padding(16.dp)
-    ) {
-        PermissionUI(
-            permissionName = "READ_CONTACTS",
-            permission = Manifest.permission.READ_CONTACTS
-        )
-        PermissionUI(
-            permissionName = "READ_PHONE_STATE",
-            permission = Manifest.permission.READ_PHONE_STATE
-        )
-        PermissionUI(
-            permissionName = "REQUEST_IGNORE_BATTERY_OPTIMIZATIONS",
-            permission = Manifest.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
-        )
-    }
+    Text(
+        text = stringResource(R.string.permissions),
+        style = MaterialTheme.typography.titleMedium
+    )
+    PermissionUI(
+        permissionName = stringResource(R.string.read_contacts_permission),
+        description = stringResource(R.string.read_contacts_permission_description),
+        permission = Manifest.permission.READ_CONTACTS
+    )
+    HorizontalDivider()
+    PermissionUI(
+        permissionName = stringResource(R.string.request_ignore_battery_optimizations_permission),
+        description = stringResource(R.string.request_ignore_battery_optimizations_permission_description),
+        permission = Manifest.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
+    )
 }
 
 @Composable
 fun RolesTab() {
-    Column(
-        modifier = Modifier
-            .verticalScroll(rememberScrollState())
-            .padding(16.dp)
-    ) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            RoleUI(
-                roleName = "ROLE_CALL_SCREENING",
-                role = RoleManager.ROLE_CALL_SCREENING,
-            )
-        }
-    }
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return
+    Text(
+        text = stringResource(R.string.roles),
+        style = MaterialTheme.typography.titleMedium
+    )
+
+    RoleUI(
+        roleName = stringResource(R.string.role_call_screening_permission),
+        description = stringResource(R.string.role_call_screening_permission_description),
+        role = RoleManager.ROLE_CALL_SCREENING,
+    )
 }
 
 @Composable
@@ -109,20 +98,19 @@ fun SystemTab() {
         permissionGranted.value = powerManager.isIgnoringBatteryOptimizations(context.packageName)
     }
 
-    Column(
-        modifier = Modifier
-            .verticalScroll(rememberScrollState())
-            .padding(16.dp)
-    ) {
-        PermissionRequestUI(
-            permissionName = "Battery Optimization Exception",
-            isGranted = permissionGranted.collectAsState(),
-            requestPermission = {
-                val intent =
-                    Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
-                intent.data = "package:${context.packageName}".toUri()
-                permissionLauncher.launch(intent)
-            }
-        )
-    }
+    Text(
+        text = stringResource(R.string.system),
+        style = MaterialTheme.typography.titleMedium
+    )
+    PermissionRequestUI(
+        permissionName = stringResource(R.string.action_request_ignore_battery_optimizations),
+        description = stringResource(R.string.action_request_ignore_battery_optimizations_description),
+        isGranted = permissionGranted.collectAsState(),
+        requestPermission = {
+            val intent =
+                Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
+            intent.data = "package:${context.packageName}".toUri()
+            permissionLauncher.launch(intent)
+        }
+    )
 }
