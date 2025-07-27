@@ -1,14 +1,12 @@
-package dev.badiale.callblocker.ui
+package dev.badiale.callblocker.presentation.components
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
@@ -16,10 +14,10 @@ import androidx.compose.ui.unit.dp
 fun PermissionRequestUI(
     permissionName: String,
     description: String = "",
-    isGranted: () -> Boolean,
+    isGranted: State<Boolean>,
     requestPermission: () -> Unit
 ) {
-    var permissionGranted by remember { mutableStateOf(isGranted()) }
+    val permissionGranted by isGranted
 
     Column(modifier = Modifier.padding(16.dp)) {
         Text(text = permissionName)
@@ -27,7 +25,6 @@ fun PermissionRequestUI(
         Text(text = description, modifier = Modifier.padding(top = 4.dp))
         Button(onClick = {
             requestPermission()
-            permissionGranted = isGranted()
         }, modifier = Modifier.padding(top = 8.dp)) {
             Text("Request $permissionName Permission")
         }
