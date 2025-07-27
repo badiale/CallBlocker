@@ -64,6 +64,12 @@ fun PermissionsTab() {
     )
     HorizontalDivider()
     PermissionUI(
+        permissionName = stringResource(R.string.read_call_log_permission),
+        description = stringResource(R.string.read_call_log_permission_description),
+        permission = Manifest.permission.READ_CALL_LOG
+    )
+    HorizontalDivider()
+    PermissionUI(
         permissionName = stringResource(R.string.request_ignore_battery_optimizations_permission),
         description = stringResource(R.string.request_ignore_battery_optimizations_permission_description),
         permission = Manifest.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS

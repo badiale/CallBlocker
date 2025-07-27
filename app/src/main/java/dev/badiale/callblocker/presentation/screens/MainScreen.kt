@@ -61,7 +61,7 @@ fun MainScreen() {
         ) { innerPadding ->
             NavHost(
                 navController = navController,
-                startDestination = Screen.ConfigurationPermission.route,
+                startDestination = Screen.CallLog.route,
                 modifier = Modifier.padding(innerPadding)
             ) {
                 appNavGraph(navController)
