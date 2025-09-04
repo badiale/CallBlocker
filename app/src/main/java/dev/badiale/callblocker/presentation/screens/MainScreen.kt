@@ -18,10 +18,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import dev.badiale.callblocker.R
 import dev.badiale.callblocker.presentation.components.DrawerContent
-import dev.badiale.callblocker.presentation.navigation.appNavGraph
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -61,10 +62,19 @@ fun MainScreen() {
         ) { innerPadding ->
             NavHost(
                 navController = navController,
-                startDestination = Screen.CallLog.route,
+                startDestination = CallLogScreenNavigation,
                 modifier = Modifier.padding(innerPadding)
             ) {
-                appNavGraph(navController)
+                composable<CallLogScreenNavigation> {
+                    CallLogScreen(navController)
+                }
+                composable<CallLogDetailsNavigation> {
+                    val details = it.toRoute<CallLogDetailsNavigation>()
+                    CallLogDetailsScreen(logId = details.id)
+                }
+                composable<ConfigurationPermissionNavigation> {
+                    ConfigurationPermissionScreen()
+                }
             }
         }
     }

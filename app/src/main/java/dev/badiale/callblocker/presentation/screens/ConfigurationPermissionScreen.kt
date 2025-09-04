@@ -31,6 +31,10 @@ import dev.badiale.callblocker.presentation.components.PermissionRequestUI
 import dev.badiale.callblocker.presentation.components.PermissionUI
 import dev.badiale.callblocker.presentation.components.RoleUI
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.serialization.Serializable
+
+@Serializable
+object ConfigurationPermissionNavigation
 
 @Preview
 @Composable

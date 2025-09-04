@@ -4,15 +4,14 @@ import android.content.Context
 import android.net.Uri
 import android.os.Build
 import android.provider.CallLog
-import androidx.core.database.getIntOrNull
-import androidx.core.database.getLongOrNull
+import androidx.core.net.toUri
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.time.Duration
 import java.util.Date
-import androidx.core.net.toUri
 
 data class CallRegistry(
+    val id: Int,
     val formattedNumber: String?,
     val number: String,
     val type: Int,
@@ -52,74 +51,86 @@ data class CallRegistry(
 
 class CallLogRepository(private val context: Context) {
 
-    suspend fun findAll(start: Int = 0, maxResults: Int = 10): List<CallRegistry> =
-        withContext(Dispatchers.IO) {
-            var count = 0
-            val callLogList = mutableListOf<CallRegistry>()
-
-            val cursor = context.contentResolver.query(
-                CallLog.Calls.CONTENT_URI,
-                null, null, null,
-                "${CallLog.Calls.DATE} DESC"
-            )
-
-            cursor?.use {
-                it.move(start)
-
-                val formattedNumberIdx = it.getColumnIndex(CallLog.Calls.CACHED_FORMATTED_NUMBER)
-                val numberIdx = it.getColumnIndex(CallLog.Calls.NUMBER)
-                val typeIdx = it.getColumnIndex(CallLog.Calls.TYPE)
-                val dateIdx = it.getColumnIndex(CallLog.Calls.DATE)
-                val durationIdx = it.getColumnIndex(CallLog.Calls.DURATION)
-                val callScreeningAppNameIdx =
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                        it.getColumnIndex(CallLog.Calls.CALL_SCREENING_APP_NAME)
-                    } else {
-                        -1
-                    }
-                val countryIsoIdx = it.getColumnIndex(CallLog.Calls.COUNTRY_ISO)
-                val cachedPhotoIdIdx = it.getColumnIndex(CallLog.Calls.CACHED_PHOTO_ID)
-                val cachedPhotoUriIdx = it.getColumnIndex(CallLog.Calls.CACHED_PHOTO_URI)
-                val missedReasonIdx = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    it.getColumnIndex(CallLog.Calls.MISSED_REASON)
+    suspend fun findAll(start: Int = 0, maxResults: Int = 10): List<CallRegistry> {
+        return load(start, maxResults, null, null).map {
+            val callScreeningAppNameIdx =
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    it[CallLog.Calls.CALL_SCREENING_APP_NAME]
                 } else {
-                    -1
+                    null
                 }
-                val blockReasonIdx = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    it.getColumnIndex(CallLog.Calls.BLOCK_REASON)
-                } else {
-                    -1
-                }
-                val newIdx = it.getColumnIndex(CallLog.Calls.NEW)
-                val viaNumberIdx = it.getColumnIndex(CallLog.Calls.VIA_NUMBER)
-                val locationIdx = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    it.getColumnIndex(CallLog.Calls.LOCATION)
-                } else {
-                    -1
-                }
-                val geocodedLocationIdx = it.getColumnIndex(CallLog.Calls.GEOCODED_LOCATION)
-
-                while (it.moveToNext() && count++ < maxResults) {
-                    callLogList += CallRegistry(
-                        formattedNumber = it.getString(formattedNumberIdx),
-                        number = it.getString(numberIdx),
-                        type = it.getInt(typeIdx),
-                        date = Date(it.getLong(dateIdx)),
-                        duration = Duration.ofSeconds(it.getLong(durationIdx)),
-                        callScreeningAppName = it.getString(callScreeningAppNameIdx),
-                        countryIso = it.getString(countryIsoIdx),
-                        cachedPhotoId = it.getLongOrNull(cachedPhotoIdIdx),
-                        cachedPhotoUri = it.getString(cachedPhotoUriIdx)?.toUri(),
-                        missedReason = it.getLongOrNull(missedReasonIdx),
-                        blockReason = it.getIntOrNull(blockReasonIdx),
-                        new = it.getIntOrNull(newIdx) == 1,
-                        viaNumber = it.getString(viaNumberIdx),
-                        location = it.getString(locationIdx),
-                        geocodedLocation = it.getString(geocodedLocationIdx),
-                    )
-                }
+            val missedReasonIdx = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                it[CallLog.Calls.MISSED_REASON]
+            } else {
+                null
+            }
+            val blockReasonIdx = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                it[CallLog.Calls.BLOCK_REASON]
+            } else {
+                null
+            }
+            val locationIdx = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                it[CallLog.Calls.LOCATION]
+            } else {
+                null
             }
 
-            return@withContext callLogList
+            CallRegistry(
+                id = it[CallLog.Calls._ID]!!.toInt(),
+                formattedNumber = it[CallLog.Calls.CACHED_FORMATTED_NUMBER],
+                number = it[CallLog.Calls.NUMBER]!!,
+                type = it[CallLog.Calls.TYPE]!!.toInt(),
+                date = Date(it[CallLog.Calls.DATE]?.toLong() ?: 0),
+                duration = Duration.ofSeconds(it[CallLog.Calls.DURATION]?.toLong() ?: 0),
+                callScreeningAppName = callScreeningAppNameIdx,
+                countryIso = it[CallLog.Calls.COUNTRY_ISO],
+                cachedPhotoId = it[CallLog.Calls.CACHED_PHOTO_ID]?.toLong(),
+                cachedPhotoUri = it[CallLog.Calls.CACHED_PHOTO_URI]?.toUri(),
+                missedReason = missedReasonIdx?.toLong(),
+                blockReason = blockReasonIdx?.toInt(),
+                new = it[CallLog.Calls.NEW]?.toInt() == 1,
+                viaNumber = it[CallLog.Calls.VIA_NUMBER],
+                location = locationIdx,
+                geocodedLocation = it[CallLog.Calls.GEOCODED_LOCATION]
+            )
         }
+    }
+
+    private suspend fun load(
+        start: Int,
+        maxResults: Int,
+        selection: String?,
+        selectionArgs: Array<String>?
+    ): List<Map<String, String>> = withContext(Dispatchers.IO) {
+        var count = 0
+        val callLogList = mutableListOf<Map<String, String>>()
+
+        val cursor = context.contentResolver.query(
+            CallLog.Calls.CONTENT_URI,
+            null, selection, selectionArgs,
+            "${CallLog.Calls.DATE} DESC"
+        )
+
+
+        cursor?.use { cursor ->
+            val all = HashMap<String, String>();
+            cursor.move(start)
+            while (cursor.moveToNext() && count++ < maxResults) {
+                for (i in 0..cursor.columnCount - 1) {
+                    cursor.getString(i)?.let { all[cursor.columnNames[i]] = it }
+                }
+                callLogList += all
+            }
+        }
+
+        return@withContext callLogList
+    }
+
+    suspend fun findById(logId: Int) =
+        load(
+            0,
+            1,
+            "_id = ?",
+            arrayOf(logId.toString())
+        ).firstOrNull() ?: emptyMap()
 }

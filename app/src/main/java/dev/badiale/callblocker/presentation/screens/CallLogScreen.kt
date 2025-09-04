@@ -11,8 +11,10 @@ import android.provider.CallLog.Calls.OUTGOING_TYPE
 import android.provider.CallLog.Calls.REJECTED_TYPE
 import android.provider.CallLog.Calls.VOICEMAIL_TYPE
 import androidx.annotation.StringRes
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -33,10 +35,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import dev.badiale.callblocker.R
 import dev.badiale.callblocker.domain.repository.CallLogRepository
 import dev.badiale.callblocker.domain.repository.CallRegistry
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.serialization.Serializable
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -44,9 +49,11 @@ import java.time.format.FormatStyle
 import java.util.Date
 import java.util.Locale
 
-@Preview
+@Serializable
+object CallLogScreenNavigation
+
 @Composable
-fun CallLogScreen() {
+fun CallLogScreen(navController: NavHostController) {
     val context = LocalContext.current
     val callLogRepository = CallLogRepository(context)
     val callLog = MutableStateFlow<List<CallRegistry>>(emptyList())
@@ -78,83 +85,12 @@ fun CallLogScreen() {
             }
     }
 
-    Column(
-        modifier = Modifier
-            .padding(16.dp)
-    ) {
+    Column {
         LazyColumn(state = listState) {
             items(logs) { log ->
-                Text(
-                    text = log.formattedNumber ?: log.number,
-                    style = MaterialTheme.typography.bodyLarge
-                )
-                Text(
-                    text = stringResource(formatType(log.type)),
-                    style = MaterialTheme.typography.bodyMedium
-                )
-                Text(
-                    text = formatDate(log.date),
-                    style = MaterialTheme.typography.bodySmall
-                )
-                log.callScreeningAppName?.let {
-                    Text(
-                        text = "callScreeningAppName: $it",
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                }
-                log.countryIso?.let {
-                    Text(
-                        text = "countryIso: $it",
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                }
-                log.cachedPhotoId?.let {
-                    Text(
-                        text = "cachedPhotoId: $it",
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                }
-                log.cachedPhotoUri?.let {
-                    Text(
-                        text = "cachedPhotoUri: $it",
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                }
-                log.missedReason?.let {
-                    Text(
-                        text = "missedReason: ${formatMissedReason(it)}",
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                }
-                log.blockReason?.let {
-                    Text(
-                        text = "blockReason: ${formatBlockedReason(it)}",
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                }
-                Text(
-                    text = "new: ${log.new}",
-                    style = MaterialTheme.typography.bodySmall
-                )
-                log.viaNumber?.let {
-                    Text(
-                        text = "viaNumber: $it",
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                }
-                log.location?.let {
-                    Text(
-                        text = "location: $it",
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                }
-                log.geocodedLocation?.let {
-                    Text(
-                        text = "geocodedLocation: $it",
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                }
-
+                CallRegistryComposable(
+                    log = log,
+                    onItemClick = { navController.navigate(CallLogDetailsNavigation(log.id)) })
                 HorizontalDivider()
                 Spacer(Modifier.height(4.dp))
             }
@@ -162,6 +98,87 @@ fun CallLogScreen() {
             if (hasMore) {
                 item { CircularProgressIndicator() }
             }
+        }
+    }
+}
+
+@Composable
+fun CallRegistryComposable(log: CallRegistry, onItemClick: (CallRegistry) -> Unit) {
+    Column(
+        modifier = Modifier
+            .clickable { onItemClick(log) }
+            .fillMaxWidth()
+            .padding(16.dp)
+    ) {
+        Text(
+            text = log.formattedNumber ?: log.number,
+            style = MaterialTheme.typography.bodyLarge
+        )
+        Text(
+            text = stringResource(formatType(log.type)),
+            style = MaterialTheme.typography.bodyMedium
+        )
+        Text(
+            text = formatDate(log.date),
+            style = MaterialTheme.typography.bodySmall
+        )
+        log.callScreeningAppName?.let {
+            Text(
+                text = "callScreeningAppName: $it",
+                style = MaterialTheme.typography.bodySmall
+            )
+        }
+        log.countryIso?.let {
+            Text(
+                text = "countryIso: $it",
+                style = MaterialTheme.typography.bodySmall
+            )
+        }
+        log.cachedPhotoId?.let {
+            Text(
+                text = "cachedPhotoId: $it",
+                style = MaterialTheme.typography.bodySmall
+            )
+        }
+        log.cachedPhotoUri?.let {
+            Text(
+                text = "cachedPhotoUri: $it",
+                style = MaterialTheme.typography.bodySmall
+            )
+        }
+        log.missedReason?.let {
+            Text(
+                text = "missedReason: ${formatMissedReason(it)}",
+                style = MaterialTheme.typography.bodySmall
+            )
+        }
+        log.blockReason?.let {
+            Text(
+                text = "blockReason: ${formatBlockedReason(it)}",
+                style = MaterialTheme.typography.bodySmall
+            )
+        }
+        Text(
+            text = "new: ${log.new}",
+            style = MaterialTheme.typography.bodySmall
+        )
+        log.viaNumber?.let {
+            Text(
+                text = "viaNumber: $it",
+                style = MaterialTheme.typography.bodySmall
+            )
+        }
+        log.location?.let {
+            Text(
+                text = "location: $it",
+                style = MaterialTheme.typography.bodySmall
+            )
+        }
+        log.geocodedLocation?.let {
+            Text(
+                text = "geocodedLocation: $it",
+                style = MaterialTheme.typography.bodySmall
+            )
         }
     }
 }
