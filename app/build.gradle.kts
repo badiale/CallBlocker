@@ -1,3 +1,5 @@
+import java.util.Date
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -13,7 +15,7 @@ android {
         applicationId = "dev.badiale.callblocker"
         minSdk = 28
         targetSdk = 36
-        versionCode = 1
+        versionCode = Date().time.toInt() / 1000
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
