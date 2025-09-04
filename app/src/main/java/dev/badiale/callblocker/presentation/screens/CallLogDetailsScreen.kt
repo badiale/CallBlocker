@@ -1,12 +1,17 @@
 package dev.badiale.callblocker.presentation.screens
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.provider.CallLog
+import android.provider.Contacts
+import android.provider.ContactsContract
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -54,6 +59,30 @@ fun CallLogDetailsScreen(logId: Int) {
                 )
             }
         } else {
+            item {
+                Row(
+                    Modifier
+                        .fillParentMaxWidth()
+                        .padding(16.dp)
+                ) {
+                    Button(onClick = {
+                        val intent = Intent(ContactsContract.Intents.Insert.ACTION).apply {
+                            type = ContactsContract.RawContacts.CONTENT_TYPE
+                            putExtra(
+                                ContactsContract.Intents.Insert.PHONE,
+                                logs[CallLog.Calls.NUMBER]
+                            )
+                            putExtra(
+                                ContactsContract.Intents.Insert.NAME,
+                                logs[CallLog.Calls.CACHED_NAME]
+                            )
+                        }
+                        context.startActivity(intent)
+                    }) {
+                        Text(text = "Add contact")
+                    }
+                }
+            }
             items(logs.entries.toList().sortedBy { it.key }) { entry ->
                 Row(
                     Modifier
