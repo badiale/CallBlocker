@@ -85,7 +85,7 @@ class CallLogRepository(private val context: Context) {
                 callScreeningAppName = callScreeningAppNameIdx,
                 countryIso = it[CallLog.Calls.COUNTRY_ISO],
                 cachedPhotoId = it[CallLog.Calls.CACHED_PHOTO_ID]?.toLong(),
-                cachedPhotoUri = it[CallLog.Calls.CACHED_PHOTO_URI]?.toUri(),
+                cachedPhotoUri = it[CallLog.Calls.CACHED_PHOTO_URI]?.ifBlank { null }?.toUri(),
                 missedReason = missedReasonIdx?.toLong(),
                 blockReason = blockReasonIdx?.toInt(),
                 new = it[CallLog.Calls.NEW]?.toInt() == 1,

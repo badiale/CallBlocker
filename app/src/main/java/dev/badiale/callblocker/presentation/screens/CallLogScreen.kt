@@ -16,6 +16,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -41,6 +42,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavHostController
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import dev.badiale.callblocker.R
 import dev.badiale.callblocker.domain.repository.CallLogRepository
 import dev.badiale.callblocker.domain.repository.CallRegistry
@@ -116,32 +119,47 @@ fun CallRegistryComposable(log: CallRegistry, onItemClick: (CallRegistry) -> Uni
             .fillMaxWidth()
             .padding(16.dp)
     ) {
-        Text(
-            text = log.formattedNumber ?: log.number,
-            style = MaterialTheme.typography.bodyLarge
-        )
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            val text = stringResource(formatTypeText(log.type))
-            Image(
-                painter = painterResource(formatTypeDrawable(log.type)),
-                contentDescription = text,
-                modifier = Modifier.size(16.dp),
-                contentScale = ContentScale.Fit
-            )
-            Text(
-                text = text,
-                style = MaterialTheme.typography.bodyMedium,
+        Row {
+            AsyncImage(
+                model = ImageRequest.Builder(context)
+                    .data(log.cachedPhotoUri ?: R.drawable.outline_call_24)
+                    .crossfade(true)
+                    .build(),
+                contentDescription = "Contact photo",
                 modifier = Modifier
-                    .weight(1f)
-                    .padding(5.dp, 0.dp)
+                    .size(48.dp)
+                    .aspectRatio(1f)
+                    .then(Modifier),
             )
-            Text(
-                text = formatDate(log.date),
-                style = MaterialTheme.typography.bodySmall
-            )
+            Column {
+                Text(
+                    text = log.formattedNumber ?: log.number,
+                    style = MaterialTheme.typography.bodyLarge
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    val text = stringResource(formatTypeText(log.type))
+                    Image(
+                        painter = painterResource(formatTypeDrawable(log.type)),
+                        contentDescription = text,
+                        modifier = Modifier.size(16.dp),
+                        contentScale = ContentScale.Fit
+                    )
+                    Text(
+                        text = text,
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(5.dp, 0.dp)
+                    )
+                    Text(
+                        text = formatDate(log.date),
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+            }
         }
     }
 }
