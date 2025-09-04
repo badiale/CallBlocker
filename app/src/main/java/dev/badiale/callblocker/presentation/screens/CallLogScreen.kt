@@ -2,7 +2,6 @@ package dev.badiale.callblocker.presentation.screens
 
 import android.Manifest
 import android.content.pm.PackageManager
-import android.provider.CallLog.Calls
 import android.provider.CallLog.Calls.ANSWERED_EXTERNALLY_TYPE
 import android.provider.CallLog.Calls.BLOCKED_TYPE
 import android.provider.CallLog.Calls.INCOMING_TYPE
@@ -10,13 +9,17 @@ import android.provider.CallLog.Calls.MISSED_TYPE
 import android.provider.CallLog.Calls.OUTGOING_TYPE
 import android.provider.CallLog.Calls.REJECTED_TYPE
 import android.provider.CallLog.Calls.VOICEMAIL_TYPE
+import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -29,14 +32,15 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
 import dev.badiale.callblocker.R
 import dev.badiale.callblocker.domain.repository.CallLogRepository
 import dev.badiale.callblocker.domain.repository.CallRegistry
@@ -104,6 +108,8 @@ fun CallLogScreen(navController: NavHostController) {
 
 @Composable
 fun CallRegistryComposable(log: CallRegistry, onItemClick: (CallRegistry) -> Unit) {
+    val context = LocalContext.current
+
     Column(
         modifier = Modifier
             .clickable { onItemClick(log) }
@@ -114,69 +120,26 @@ fun CallRegistryComposable(log: CallRegistry, onItemClick: (CallRegistry) -> Uni
             text = log.formattedNumber ?: log.number,
             style = MaterialTheme.typography.bodyLarge
         )
-        Text(
-            text = stringResource(formatType(log.type)),
-            style = MaterialTheme.typography.bodyMedium
-        )
-        Text(
-            text = formatDate(log.date),
-            style = MaterialTheme.typography.bodySmall
-        )
-        log.callScreeningAppName?.let {
-            Text(
-                text = "callScreeningAppName: $it",
-                style = MaterialTheme.typography.bodySmall
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            val text = stringResource(formatTypeText(log.type))
+            Image(
+                painter = painterResource(formatTypeDrawable(log.type)),
+                contentDescription = text,
+                modifier = Modifier.size(16.dp),
+                contentScale = ContentScale.Fit
             )
-        }
-        log.countryIso?.let {
             Text(
-                text = "countryIso: $it",
-                style = MaterialTheme.typography.bodySmall
+                text = text,
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(5.dp, 0.dp)
             )
-        }
-        log.cachedPhotoId?.let {
             Text(
-                text = "cachedPhotoId: $it",
-                style = MaterialTheme.typography.bodySmall
-            )
-        }
-        log.cachedPhotoUri?.let {
-            Text(
-                text = "cachedPhotoUri: $it",
-                style = MaterialTheme.typography.bodySmall
-            )
-        }
-        log.missedReason?.let {
-            Text(
-                text = "missedReason: ${formatMissedReason(it)}",
-                style = MaterialTheme.typography.bodySmall
-            )
-        }
-        log.blockReason?.let {
-            Text(
-                text = "blockReason: ${formatBlockedReason(it)}",
-                style = MaterialTheme.typography.bodySmall
-            )
-        }
-        Text(
-            text = "new: ${log.new}",
-            style = MaterialTheme.typography.bodySmall
-        )
-        log.viaNumber?.let {
-            Text(
-                text = "viaNumber: $it",
-                style = MaterialTheme.typography.bodySmall
-            )
-        }
-        log.location?.let {
-            Text(
-                text = "location: $it",
-                style = MaterialTheme.typography.bodySmall
-            )
-        }
-        log.geocodedLocation?.let {
-            Text(
-                text = "geocodedLocation: $it",
+                text = formatDate(log.date),
                 style = MaterialTheme.typography.bodySmall
             )
         }
@@ -184,7 +147,7 @@ fun CallRegistryComposable(log: CallRegistry, onItemClick: (CallRegistry) -> Uni
 }
 
 @StringRes
-fun formatType(type: Int): Int {
+fun formatTypeText(type: Int): Int {
     return when (type) {
         INCOMING_TYPE -> R.string.call_type_incoming_type
         OUTGOING_TYPE -> R.string.call_type_outgoing_type
@@ -197,34 +160,16 @@ fun formatType(type: Int): Int {
     }
 }
 
-fun formatMissedReason(type: Long): String {
+@DrawableRes
+fun formatTypeDrawable(type: Int): Int {
     return when (type) {
-        Calls.MISSED_REASON_NOT_MISSED -> "MISSED_REASON_NOT_MISSED"
-        Calls.AUTO_MISSED_EMERGENCY_CALL -> "AUTO_MISSED_EMERGENCY_CALL"
-        Calls.AUTO_MISSED_MAXIMUM_RINGING -> "AUTO_MISSED_MAXIMUM_RINGING"
-        Calls.AUTO_MISSED_MAXIMUM_DIALING -> "AUTO_MISSED_MAXIMUM_DIALING"
-        Calls.USER_MISSED_NO_ANSWER -> "USER_MISSED_NO_ANSWER"
-        Calls.USER_MISSED_SHORT_RING -> "USER_MISSED_SHORT_RING"
-        Calls.USER_MISSED_DND_MODE -> "USER_MISSED_DND_MODE"
-        Calls.USER_MISSED_LOW_RING_VOLUME -> "USER_MISSED_LOW_RING_VOLUME"
-        Calls.USER_MISSED_NO_VIBRATE -> "USER_MISSED_NO_VIBRATE"
-        Calls.USER_MISSED_CALL_SCREENING_SERVICE_SILENCED -> "USER_MISSED_CALL_SCREENING_SERVICE_SILENCED"
-        Calls.USER_MISSED_CALL_FILTERS_TIMEOUT -> "USER_MISSED_CALL_FILTERS_TIMEOUT"
-        else -> "unknown"
-    }
-}
-
-fun formatBlockedReason(type: Int): String {
-    return when (type) {
-        Calls.BLOCK_REASON_NOT_BLOCKED -> "BLOCK_REASON_NOT_BLOCKED"
-        Calls.BLOCK_REASON_CALL_SCREENING_SERVICE -> "BLOCK_REASON_CALL_SCREENING_SERVICE"
-        Calls.BLOCK_REASON_DIRECT_TO_VOICEMAIL -> "BLOCK_REASON_DIRECT_TO_VOICEMAIL"
-        Calls.BLOCK_REASON_BLOCKED_NUMBER -> "BLOCK_REASON_BLOCKED_NUMBER"
-        Calls.BLOCK_REASON_UNKNOWN_NUMBER -> "BLOCK_REASON_UNKNOWN_NUMBER"
-        Calls.BLOCK_REASON_RESTRICTED_NUMBER -> "BLOCK_REASON_RESTRICTED_NUMBER"
-        Calls.BLOCK_REASON_PAY_PHONE -> "BLOCK_REASON_PAY_PHONE"
-        Calls.BLOCK_REASON_NOT_IN_CONTACTS -> "BLOCK_REASON_NOT_IN_CONTACTS"
-        else -> "unknown"
+        INCOMING_TYPE -> R.drawable.baseline_call_received_24
+        OUTGOING_TYPE -> R.drawable.baseline_call_made_24
+        MISSED_TYPE -> R.drawable.baseline_call_missed_24
+        VOICEMAIL_TYPE -> R.drawable.baseline_voicemail_24
+        REJECTED_TYPE -> R.drawable.baseline_call_end_24
+        BLOCKED_TYPE -> R.drawable.baseline_block_24
+        else -> R.drawable.baseline_question_mark_24
     }
 }
 
