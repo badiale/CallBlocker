@@ -51,7 +51,7 @@ data class CallRegistry(
 
 class CallLogRepository(private val context: Context) {
 
-    suspend fun findAll(start: Int = 0, maxResults: Int = 10): List<CallRegistry> {
+    suspend fun findAll(start: Int = 0, maxResults: Int = 100): List<CallRegistry> {
         return load(start, maxResults, null, null).map {
             val callScreeningAppNameIdx =
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -113,9 +113,9 @@ class CallLogRepository(private val context: Context) {
 
 
         cursor?.use { cursor ->
-            val all = HashMap<String, String>();
             cursor.move(start)
             while (cursor.moveToNext() && count++ < maxResults) {
+                val all = HashMap<String, String>();
                 for (i in 0..cursor.columnCount - 1) {
                     cursor.getString(i)?.let { all[cursor.columnNames[i]] = it }
                 }
