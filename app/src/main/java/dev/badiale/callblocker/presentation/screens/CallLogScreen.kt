@@ -136,6 +136,17 @@ fun CallRegistryComposable(log: CallRegistry, onItemClick: (CallRegistry) -> Uni
                     text = log.contactName ?: log.formattedNumber ?: log.number,
                     style = MaterialTheme.typography.bodyLarge
                 )
+                log.viaNumber?.let {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = stringResource(R.string.call_to_number, log.viaNumber),
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                }
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically

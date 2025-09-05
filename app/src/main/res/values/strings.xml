@@ -20,11 +20,12 @@
     <string name="call_type_missed_type">Perdida</string>
     <string name="call_type_voicemail_type">Caixa postal</string>
     <string name="call_type_rejected_type">Rejeitada pelo usuário</string>
-    <string name="call_type_blocked_type">Bloqueada automaticamente</string>
+    <string name="call_type_blocked_type">Bloqueada</string>
     <string name="call_type_answered_externally_type">Atendido em outro dispositivo</string>
     <string name="call_type_answered_unknown">Tipo desconhecido</string>
     <string name="general">Geral</string>
     <string name="configuration_block_enabled">Bloquear números desconhecidos</string>
     <string name="configuration_block_enabled_description">Ao habilitar este campo, todas as chamadas de números desconhecidos serão bloqueadas.</string>
     <string name="configuration">Configurações</string>
+    <string name="call_to_number">Para o número: %s</string>
 </resources>

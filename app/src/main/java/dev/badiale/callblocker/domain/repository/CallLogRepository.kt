@@ -24,28 +24,6 @@ class CallLogRepository(private val context: Context) {
 
     suspend fun findAll(start: Int = 0, maxResults: Int = 100): List<CallRegistry> {
         return load(start, maxResults, null, null).map {
-            val callScreeningAppNameIdx =
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    it[CallLog.Calls.CALL_SCREENING_APP_NAME]
-                } else {
-                    null
-                }
-            val missedReasonIdx = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                it[CallLog.Calls.MISSED_REASON]
-            } else {
-                null
-            }
-            val blockReasonIdx = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                it[CallLog.Calls.BLOCK_REASON]
-            } else {
-                null
-            }
-            val locationIdx = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                it[CallLog.Calls.LOCATION]
-            } else {
-                null
-            }
-
             CallRegistry(
                 id = it[CallLog.Calls._ID]!!.toInt(),
                 formattedNumber = it[CallLog.Calls.CACHED_FORMATTED_NUMBER],
