@@ -1,6 +1,7 @@
 package dev.badiale.callblocker.presentation.screens
 
 import android.Manifest
+import android.content.Context
 import android.content.pm.PackageManager
 import android.provider.CallLog.Calls.ANSWERED_EXTERNALLY_TYPE
 import android.provider.CallLog.Calls.BLOCKED_TYPE
@@ -9,6 +10,8 @@ import android.provider.CallLog.Calls.MISSED_TYPE
 import android.provider.CallLog.Calls.OUTGOING_TYPE
 import android.provider.CallLog.Calls.REJECTED_TYPE
 import android.provider.CallLog.Calls.VOICEMAIL_TYPE
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.Image
@@ -67,17 +70,20 @@ fun CallLogScreen(navController: NavHostController) {
     val loading = MutableStateFlow(false)
     val hasMore by loading.collectAsState()
     val logs by callLog.collectAsState()
-
+    val permissionGranted = MutableStateFlow(getHasPermission(context))
     val listState = rememberLazyListState()
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        permissionGranted.value = isGranted
+    }
+    val permissionGrantedState by permissionGranted.collectAsState()
 
     // Detect when user scrolls near the end
 
-    LaunchedEffect(listState) {
-        val hasPermission = ContextCompat.checkSelfPermission(
-            context,
-            Manifest.permission.READ_CALL_LOG
-        ) == PackageManager.PERMISSION_GRANTED
-        if (!hasPermission) {
+    LaunchedEffect(listState, permissionGrantedState) {
+        if (!permissionGrantedState) {
+            permissionLauncher.launch(Manifest.permission.READ_CALL_LOG)
             return@LaunchedEffect
         }
         callLog.value = callLogRepository.findAll()
@@ -108,6 +114,11 @@ fun CallLogScreen(navController: NavHostController) {
         }
     }
 }
+
+private fun getHasPermission(context: Context): Boolean = ContextCompat.checkSelfPermission(
+    context,
+    Manifest.permission.READ_CALL_LOG
+) == PackageManager.PERMISSION_GRANTED
 
 @Composable
 fun CallRegistryComposable(log: CallRegistry, onItemClick: (CallRegistry) -> Unit) {
