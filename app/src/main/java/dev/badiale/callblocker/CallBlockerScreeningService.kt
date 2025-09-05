@@ -6,14 +6,16 @@ import android.provider.ContactsContract
 import android.telecom.Call
 import android.telecom.CallScreeningService
 import android.util.Log
+import dev.badiale.callblocker.services.PreferenceService
 
 class CallBlockerScreeningService : CallScreeningService() {
     override fun onScreenCall(callDetails: Call.Details) {
         val number = callDetails.handle.schemeSpecificPart
         Log.d("CallBlocker", "Incoming call: $number")
+        val preferenceService = PreferenceService(this)
 
         val callResponseBuilder = CallResponse.Builder()
-        if (!isInContacts(number)) {
+        if (preferenceService.isBlockUnknownNumber() && !isInContacts(number)) {
             callResponseBuilder
                 .setDisallowCall(true)
                 .setRejectCall(true)

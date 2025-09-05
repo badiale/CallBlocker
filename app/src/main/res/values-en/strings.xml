@@ -24,4 +24,8 @@
     <string name="call_type_blocked_type">Blocked</string>
     <string name="call_type_answered_externally_type">Answered externally</string>
     <string name="call_type_answered_unknown">Unknown</string>
+    <string name="general">General</string>
+    <string name="configuration_block_enabled">Block unknown numbers</string>
+    <string name="configuration_block_enabled_description">All calls from unknown numbers will be blocked when this option is enabled.</string>
+    <string name="configuration">Configurations</string>
 </resources>

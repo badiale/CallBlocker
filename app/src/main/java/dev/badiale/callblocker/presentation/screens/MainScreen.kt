@@ -75,6 +75,9 @@ fun MainScreen() {
                 composable<ConfigurationPermissionNavigation> {
                     ConfigurationPermissionScreen()
                 }
+                composable<ConfigurationNavigation> {
+                    ConfigurationScreen()
+                }
             }
         }
     }

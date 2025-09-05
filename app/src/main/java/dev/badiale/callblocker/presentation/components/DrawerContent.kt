@@ -30,6 +30,10 @@ fun DrawerContent(onDestinationClicked: (Screen) -> Unit) {
             onDestinationClicked = onDestinationClicked
         )
         ScreenDrawerItem(
+            screen = Screen.Configuration,
+            onDestinationClicked = onDestinationClicked
+        )
+        ScreenDrawerItem(
             screen = Screen.ConfigurationPermission,
             onDestinationClicked = onDestinationClicked
         )
