@@ -133,7 +133,7 @@ fun CallRegistryComposable(log: CallRegistry, onItemClick: (CallRegistry) -> Uni
             )
             Column {
                 Text(
-                    text = log.formattedNumber ?: log.number,
+                    text = log.contactName ?: log.formattedNumber ?: log.number,
                     style = MaterialTheme.typography.bodyLarge
                 )
                 Row(

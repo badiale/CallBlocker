@@ -7,46 +7,17 @@ import android.provider.CallLog
 import androidx.core.net.toUri
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import java.time.Duration
 import java.util.Date
 
 data class CallRegistry(
     val id: Int,
     val formattedNumber: String?,
     val number: String,
+    val contactName: String?,
     val type: Int,
     val date: Date,
-    val duration: Duration,
-    val callScreeningAppName: String?,
-    val countryIso: String?,
-    val cachedPhotoId: Long?,
     val cachedPhotoUri: Uri?,
-
-    /**
-     * USER_MISSED_SHORT_RING
-     * USER_MISSED_DND_MODE
-     * USER_MISSED_LOW_RING_VOLUME
-     * USER_MISSED_NO_VIBRATE
-     * USER_MISSED_CALL_SCREENING_SERVICE_SILENCED
-     * USER_MISSED_CALL_FILTERS_TIMEOUT
-     * */
-    val missedReason: Long?,
-
-    /**
-     * BLOCK_REASON_NOT_BLOCKED
-     * BLOCK_REASON_CALL_SCREENING_SERVICE
-     * BLOCK_REASON_DIRECT_TO_VOICEMAIL
-     * BLOCK_REASON_BLOCKED_NUMBER
-     * BLOCK_REASON_UNKNOWN_NUMBER
-     * BLOCK_REASON_RESTRICTED_NUMBER
-     * BLOCK_REASON_PAY_PHONE
-     * BLOCK_REASON_NOT_IN_CONTACTS
-     * */
-    val blockReason: Int?,
-    val new: Boolean,
     val viaNumber: String?,
-    val location: String?,
-    val geocodedLocation: String?,
 )
 
 class CallLogRepository(private val context: Context) {
@@ -79,19 +50,11 @@ class CallLogRepository(private val context: Context) {
                 id = it[CallLog.Calls._ID]!!.toInt(),
                 formattedNumber = it[CallLog.Calls.CACHED_FORMATTED_NUMBER],
                 number = it[CallLog.Calls.NUMBER]!!,
+                contactName = it[CallLog.Calls.CACHED_NAME],
                 type = it[CallLog.Calls.TYPE]!!.toInt(),
                 date = Date(it[CallLog.Calls.DATE]?.toLong() ?: 0),
-                duration = Duration.ofSeconds(it[CallLog.Calls.DURATION]?.toLong() ?: 0),
-                callScreeningAppName = callScreeningAppNameIdx,
-                countryIso = it[CallLog.Calls.COUNTRY_ISO],
-                cachedPhotoId = it[CallLog.Calls.CACHED_PHOTO_ID]?.toLong(),
                 cachedPhotoUri = it[CallLog.Calls.CACHED_PHOTO_URI]?.ifBlank { null }?.toUri(),
-                missedReason = missedReasonIdx?.toLong(),
-                blockReason = blockReasonIdx?.toInt(),
-                new = it[CallLog.Calls.NEW]?.toInt() == 1,
-                viaNumber = it[CallLog.Calls.VIA_NUMBER],
-                location = locationIdx,
-                geocodedLocation = it[CallLog.Calls.GEOCODED_LOCATION]
+                viaNumber = it["phone_account_address"],
             )
         }
     }
@@ -117,7 +80,11 @@ class CallLogRepository(private val context: Context) {
             while (cursor.moveToNext() && count++ < maxResults) {
                 val all = HashMap<String, String>();
                 for (i in 0..cursor.columnCount - 1) {
-                    cursor.getString(i)?.let { all[cursor.columnNames[i]] = it }
+                    cursor.getString(i)?.let {
+                        if (!it.isEmpty()) {
+                            all[cursor.columnNames[i]] = it
+                        }
+                    }
                 }
                 callLogList += all
             }
