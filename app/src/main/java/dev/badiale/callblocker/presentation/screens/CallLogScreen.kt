@@ -2,7 +2,10 @@ package dev.badiale.callblocker.presentation.screens
 
 import android.Manifest
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.res.Resources
+import android.net.Uri
 import android.provider.CallLog.Calls.ANSWERED_EXTERNALLY_TYPE
 import android.provider.CallLog.Calls.BLOCKED_TYPE
 import android.provider.CallLog.Calls.INCOMING_TYPE
@@ -10,6 +13,7 @@ import android.provider.CallLog.Calls.MISSED_TYPE
 import android.provider.CallLog.Calls.OUTGOING_TYPE
 import android.provider.CallLog.Calls.REJECTED_TYPE
 import android.provider.CallLog.Calls.VOICEMAIL_TYPE
+import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.DrawableRes
@@ -27,6 +31,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -99,6 +104,21 @@ fun CallLogScreen(navController: NavHostController) {
     }
 
     Column {
+        if (!permissionGrantedState) {
+            Text(
+                text = stringResource(R.string.permission_not_granted),
+                style = MaterialTheme.typography.titleLarge
+            )
+            Button(onClick = {
+                val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                    setData(Uri.fromParts("package", context.packageName, null));
+                };
+                context.startActivity(intent);
+            }) {
+                Text(text = stringResource(R.string.permissions))
+            }
+            return
+        }
         LazyColumn(state = listState) {
             items(logs) { log ->
                 CallRegistryComposable(

@@ -28,4 +28,5 @@
     <string name="configuration_block_enabled_description">Ao habilitar este campo, todas as chamadas de números desconhecidos serão bloqueadas.</string>
     <string name="configuration">Configurações</string>
     <string name="call_to_number">Para o número: %s</string>
+    <string name="permission_not_granted">Permissão indisponível</string>
 </resources>

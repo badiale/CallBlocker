@@ -29,4 +29,5 @@
     <string name="configuration_block_enabled_description">All calls from unknown numbers will be blocked when this option is enabled.</string>
     <string name="configuration">Configurations</string>
     <string name="call_to_number">To number: %s</string>
+    <string name="permission_not_granted">Permission not granted</string>
 </resources>
