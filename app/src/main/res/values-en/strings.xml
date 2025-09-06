@@ -30,4 +30,6 @@
     <string name="configuration">Configurations</string>
     <string name="call_to_number">To number: %s</string>
     <string name="permission_not_granted">Permission not granted</string>
+    <string name="first_run_title">Welcome</string>
+    <string name="first_run_body">To use the app, activate the necessary permissions.</string>
 </resources>

@@ -11,25 +11,41 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.AlertDialogDefaults
+import androidx.compose.material3.BasicAlertDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.DialogProperties
 import androidx.core.net.toUri
 import dev.badiale.callblocker.R
 import dev.badiale.callblocker.presentation.components.PermissionRequestUI
 import dev.badiale.callblocker.presentation.components.PermissionUI
 import dev.badiale.callblocker.presentation.components.RoleUI
+import dev.badiale.callblocker.services.PreferenceService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.serialization.Serializable
 
@@ -38,7 +54,49 @@ object ConfigurationPermissionNavigation
 
 @Preview
 @Composable
+@OptIn(ExperimentalMaterial3Api::class)
 fun ConfigurationPermissionScreen() {
+    val preferenceService = PreferenceService(LocalContext.current)
+    if (preferenceService.isFirstRun()) {
+        val openDialog = remember { mutableStateOf(true) }
+
+        if (openDialog.value) {
+            BasicAlertDialog(
+                onDismissRequest = {}
+            ) {
+                Surface(
+                    modifier = Modifier
+                        .wrapContentWidth()
+                        .wrapContentHeight()
+                        .shadow(elevation = 2.dp, shape = MaterialTheme.shapes.large),
+                    shape = MaterialTheme.shapes.large,
+                    tonalElevation = 1.dp
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            style = MaterialTheme.typography.titleMedium,
+                            text = stringResource(R.string.first_run_title)
+                        )
+                        Text(
+                            style = MaterialTheme.typography.bodyMedium,
+                            text = stringResource(R.string.first_run_body)
+                        )
+                        Spacer(modifier = Modifier.height(24.dp))
+                        TextButton(
+                            onClick = {
+                                openDialog.value = false
+                                preferenceService.doFirstRun()
+                            },
+                            modifier = Modifier.align(Alignment.End)
+                        ) {
+                            Text(stringResource(android.R.string.ok))
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     Column(
         modifier = Modifier
             .verticalScroll(rememberScrollState())
