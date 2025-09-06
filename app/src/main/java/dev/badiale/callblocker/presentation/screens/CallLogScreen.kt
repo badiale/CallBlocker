@@ -36,6 +36,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -109,7 +110,7 @@ fun CallLogScreen(navController: NavHostController) {
                 text = stringResource(R.string.permission_not_granted),
                 style = MaterialTheme.typography.titleLarge
             )
-            Button(onClick = {
+            TextButton(onClick = {
                 val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
                     setData(Uri.fromParts("package", context.packageName, null));
                 };
