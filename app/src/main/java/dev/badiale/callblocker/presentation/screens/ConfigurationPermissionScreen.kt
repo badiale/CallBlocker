@@ -11,16 +11,12 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -39,7 +35,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.DialogProperties
 import androidx.core.net.toUri
 import dev.badiale.callblocker.R
 import dev.badiale.callblocker.presentation.components.PermissionRequestUI
@@ -123,12 +118,6 @@ fun PermissionsTab() {
         permissionName = stringResource(R.string.read_contacts_permission),
         description = stringResource(R.string.read_contacts_permission_description),
         permission = Manifest.permission.READ_CONTACTS
-    )
-    HorizontalDivider()
-    PermissionUI(
-        permissionName = stringResource(R.string.read_call_log_permission),
-        description = stringResource(R.string.read_call_log_permission_description),
-        permission = Manifest.permission.READ_CALL_LOG
     )
     HorizontalDivider()
     PermissionUI(

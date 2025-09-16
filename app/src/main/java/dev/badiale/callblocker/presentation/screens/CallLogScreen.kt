@@ -1,11 +1,5 @@
 package dev.badiale.callblocker.presentation.screens
 
-import android.Manifest
-import android.content.Context
-import android.content.Intent
-import android.content.pm.PackageManager
-import android.content.res.Resources
-import android.net.Uri
 import android.provider.CallLog.Calls.ANSWERED_EXTERNALLY_TYPE
 import android.provider.CallLog.Calls.BLOCKED_TYPE
 import android.provider.CallLog.Calls.INCOMING_TYPE
@@ -13,9 +7,6 @@ import android.provider.CallLog.Calls.MISSED_TYPE
 import android.provider.CallLog.Calls.OUTGOING_TYPE
 import android.provider.CallLog.Calls.REJECTED_TYPE
 import android.provider.CallLog.Calls.VOICEMAIL_TYPE
-import android.provider.Settings
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.Image
@@ -31,12 +22,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -49,7 +38,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
@@ -76,22 +64,9 @@ fun CallLogScreen(navController: NavHostController) {
     val loading = MutableStateFlow(false)
     val hasMore by loading.collectAsState()
     val logs by callLog.collectAsState()
-    val permissionGranted = MutableStateFlow(getHasPermission(context))
     val listState = rememberLazyListState()
-    val permissionLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission()
-    ) { isGranted ->
-        permissionGranted.value = isGranted
-    }
-    val permissionGrantedState by permissionGranted.collectAsState()
 
-    // Detect when user scrolls near the end
-
-    LaunchedEffect(listState, permissionGrantedState) {
-        if (!permissionGrantedState) {
-            permissionLauncher.launch(Manifest.permission.READ_CALL_LOG)
-            return@LaunchedEffect
-        }
+    LaunchedEffect(listState) {
         callLog.value = callLogRepository.findAll()
         loading.value = callLog.value.isNotEmpty()
         snapshotFlow { listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index }
@@ -105,26 +80,11 @@ fun CallLogScreen(navController: NavHostController) {
     }
 
     Column {
-        if (!permissionGrantedState) {
-            Text(
-                text = stringResource(R.string.permission_not_granted),
-                style = MaterialTheme.typography.titleLarge
-            )
-            TextButton(onClick = {
-                val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                    setData(Uri.fromParts("package", context.packageName, null));
-                };
-                context.startActivity(intent);
-            }) {
-                Text(text = stringResource(R.string.permissions))
-            }
-            return
-        }
         LazyColumn(state = listState) {
             items(logs) { log ->
                 CallRegistryComposable(
                     log = log,
-                    onItemClick = { navController.navigate(CallLogDetailsNavigation(log.id)) })
+                    onItemClick = { navController.navigate(CallLogDetailsNavigation(log.id!!)) })
                 HorizontalDivider()
                 Spacer(Modifier.height(4.dp))
             }
@@ -135,11 +95,6 @@ fun CallLogScreen(navController: NavHostController) {
         }
     }
 }
-
-private fun getHasPermission(context: Context): Boolean = ContextCompat.checkSelfPermission(
-    context,
-    Manifest.permission.READ_CALL_LOG
-) == PackageManager.PERMISSION_GRANTED
 
 @Composable
 fun CallRegistryComposable(log: CallRegistry, onItemClick: (CallRegistry) -> Unit) {
@@ -168,17 +123,6 @@ fun CallRegistryComposable(log: CallRegistry, onItemClick: (CallRegistry) -> Uni
                     text = log.contactName ?: log.formattedNumber ?: log.number,
                     style = MaterialTheme.typography.bodyLarge
                 )
-                log.viaNumber?.let {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = stringResource(R.string.call_to_number, log.viaNumber),
-                            style = MaterialTheme.typography.bodySmall
-                        )
-                    }
-                }
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically

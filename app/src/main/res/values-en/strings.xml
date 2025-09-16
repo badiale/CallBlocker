@@ -11,11 +11,9 @@
     <string name="request_ignore_battery_optimizations_permission_description">Allows the app to request disabling the battery optimizations. This permission is useful, but not strictly necessary for the app functions, since it is possible to disable optimizations via the system configurations.</string>
     <string name="role_call_screening_permission">Define as call screening</string>
     <string name="role_call_screening_permission_description">Permission needed to be able to block calls. A dialog will be displayed asking to choose this app as your default call screening app.</string>
-    <string name="read_call_log_permission_description">Optional permission to allow the call log functionality</string>
     <string name="action_request_ignore_battery_optimizations">Turn off battery optimizations</string>
     <string name="action_request_ignore_battery_optimizations_description">With battery optimizations enabled, the app can be interrupted at any moment, disrupting the app ability to block calls.</string>
     <string name="navigation">Navigation</string>
-    <string name="read_call_log_permission">Read call log</string>
     <string name="call_type_incoming_type">Incoming</string>
     <string name="call_type_outgoing_type">Ongoing</string>
     <string name="call_type_missed_type">Missed</string>
@@ -28,7 +26,6 @@
     <string name="configuration_block_enabled">Block unknown numbers</string>
     <string name="configuration_block_enabled_description">All calls from unknown numbers will be blocked when this option is enabled.</string>
     <string name="configuration">Configurations</string>
-    <string name="call_to_number">To number: %s</string>
     <string name="permission_not_granted">Permission not granted</string>
     <string name="first_run_title">Welcome</string>
     <string name="first_run_body">To use the app, activate the necessary permissions.</string>

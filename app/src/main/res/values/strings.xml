@@ -10,8 +10,6 @@
     <string name="request_ignore_battery_optimizations_permission_description">Permite solicitar a desativação das otimizações de bateria. Esta permissão é uma conveniência, porém não é estritamente necessária para o funcionamento, podendo desativar as otimizações pelas configurações do sistema.</string>
     <string name="role_call_screening_permission">Definir como bloqueador de chamadas</string>
     <string name="role_call_screening_permission_description">Permissão necessária para bloquear chamadas.\nSerá exibida uma tela com algumas opções, e é necessário escolher este aplicativo.</string>
-    <string name="read_call_log_permission">Ler registro de chamadas</string>
-    <string name="read_call_log_permission_description">Permissão opcional que permite a exibição do registro de chamadas.</string>
     <string name="action_request_ignore_battery_optimizations">Desativar otimizações de bateria</string>
     <string name="action_request_ignore_battery_optimizations_description">Com as otimizações ativadas, o aplicativo pode ser interrompido a qualquer momento, o que pode causar mal funcionamento na detecção das chamadas.</string>
     <string name="navigation">Navegação</string>
@@ -27,7 +25,6 @@
     <string name="configuration_block_enabled">Bloquear números desconhecidos</string>
     <string name="configuration_block_enabled_description">Ao habilitar este campo, todas as chamadas de números desconhecidos serão bloqueadas.</string>
     <string name="configuration">Configurações</string>
-    <string name="call_to_number">Para o número: %s</string>
     <string name="permission_not_granted">Permissão indisponível</string>
     <string name="first_run_title">Bem vindo</string>
     <string name="first_run_body">Para usar o aplicativo, ative as permissões necessárias.</string>
