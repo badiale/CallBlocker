@@ -1,5 +1,6 @@
 package dev.badiale.callblocker.presentation.screens
 
+import android.content.Intent
 import android.provider.CallLog.Calls.ANSWERED_EXTERNALLY_TYPE
 import android.provider.CallLog.Calls.BLOCKED_TYPE
 import android.provider.CallLog.Calls.INCOMING_TYPE
@@ -7,14 +8,17 @@ import android.provider.CallLog.Calls.MISSED_TYPE
 import android.provider.CallLog.Calls.OUTGOING_TYPE
 import android.provider.CallLog.Calls.REJECTED_TYPE
 import android.provider.CallLog.Calls.VOICEMAIL_TYPE
+import android.provider.ContactsContract
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -22,14 +26,18 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,13 +46,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
+import androidx.compose.ui.window.Dialog
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import dev.badiale.callblocker.R
 import dev.badiale.callblocker.domain.repository.CallLogRepository
 import dev.badiale.callblocker.domain.repository.CallRegistry
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.serialization.Serializable
 import java.time.Instant
 import java.time.ZoneId
@@ -57,34 +64,46 @@ import java.util.Locale
 object CallLogScreenNavigation
 
 @Composable
-fun CallLogScreen(navController: NavHostController) {
+fun CallLogScreen() {
     val context = LocalContext.current
     val callLogRepository = CallLogRepository(context)
-    val callLog = MutableStateFlow<List<CallRegistry>>(emptyList())
-    val loading = MutableStateFlow(false)
-    val hasMore by loading.collectAsState()
-    val logs by callLog.collectAsState()
+
+    val callLog = remember { mutableStateOf<List<CallRegistry>>(emptyList()) }
+    val loading = remember { mutableStateOf(false) }
+    val openContactDetailsDialog = remember { mutableStateOf<CallRegistry?>(null) }
     val listState = rememberLazyListState()
+
+    val hasMore by loading
+    val callRegistries by callLog
+
+    when {
+        openContactDetailsDialog.value != null -> {
+            ContactDetailsDialog(
+                onDismissRequest = { openContactDetailsDialog.value = null },
+                callRegistry = openContactDetailsDialog.value!!
+            )
+        }
+    }
 
     LaunchedEffect(listState) {
         callLog.value = callLogRepository.findAll()
         loading.value = callLog.value.isNotEmpty()
         snapshotFlow { listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index }
             .collect { lastVisibleItem ->
-                if (lastVisibleItem != null && lastVisibleItem >= logs.size - 3 && hasMore) {
+                if (lastVisibleItem != null && lastVisibleItem >= callRegistries.size - 3 && hasMore) {
                     val findAll = callLogRepository.findAll(start = lastVisibleItem)
                     loading.value = findAll.isNotEmpty()
-                    callLog.value = logs + findAll
+                    callLog.value = callRegistries + findAll
                 }
             }
     }
 
     Column {
         LazyColumn(state = listState) {
-            items(logs) { log ->
+            items(callRegistries) { callRegistry ->
                 CallRegistryComposable(
-                    log = log,
-                    onItemClick = { navController.navigate(CallLogDetailsNavigation(log.id!!)) })
+                    callRegistry = callRegistry,
+                    onItemClick = { openContactDetailsDialog.value = callRegistry })
                 HorizontalDivider()
                 Spacer(Modifier.height(4.dp))
             }
@@ -97,22 +116,22 @@ fun CallLogScreen(navController: NavHostController) {
 }
 
 @Composable
-fun CallRegistryComposable(log: CallRegistry, onItemClick: (CallRegistry) -> Unit) {
+fun CallRegistryComposable(callRegistry: CallRegistry, onItemClick: (CallRegistry) -> Unit) {
     val context = LocalContext.current
 
     Column(
         modifier = Modifier
-            .clickable { onItemClick(log) }
+            .clickable { onItemClick(callRegistry) }
             .fillMaxWidth()
             .padding(16.dp)
     ) {
         Row {
             AsyncImage(
                 model = ImageRequest.Builder(context)
-                    .data(log.cachedPhotoUri ?: R.drawable.outline_call_24)
+                    .data(callRegistry.cachedPhotoUri ?: R.drawable.outline_call_24)
                     .crossfade(true)
                     .build(),
-                contentDescription = "Contact photo",
+                contentDescription = stringResource(R.string.contact_photo),
                 modifier = Modifier
                     .size(48.dp)
                     .aspectRatio(1f)
@@ -120,16 +139,16 @@ fun CallRegistryComposable(log: CallRegistry, onItemClick: (CallRegistry) -> Uni
             )
             Column {
                 Text(
-                    text = log.contactName ?: log.formattedNumber ?: log.number,
+                    text = callRegistry.contactName ?: callRegistry.formattedNumber ?: callRegistry.number,
                     style = MaterialTheme.typography.bodyLarge
                 )
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    val text = stringResource(formatTypeText(log.type))
+                    val text = stringResource(formatTypeText(callRegistry.type))
                     Image(
-                        painter = painterResource(formatTypeDrawable(log.type)),
+                        painter = painterResource(formatTypeDrawable(callRegistry.type)),
                         contentDescription = text,
                         modifier = Modifier.size(16.dp),
                         contentScale = ContentScale.Fit
@@ -142,7 +161,7 @@ fun CallRegistryComposable(log: CallRegistry, onItemClick: (CallRegistry) -> Uni
                             .padding(5.dp, 0.dp)
                     )
                     Text(
-                        text = formatDate(log.date),
+                        text = formatDate(callRegistry.date),
                         style = MaterialTheme.typography.bodySmall
                     )
                 }
@@ -184,4 +203,63 @@ fun formatDate(date: Date): String {
         .withZone(ZoneId.systemDefault())
 
     return formatter.format(Instant.ofEpochMilli(date.time))
+}
+
+@Composable
+fun ContactDetailsDialog(onDismissRequest: () -> Unit, callRegistry: CallRegistry) {
+    val context = LocalContext.current
+
+    Dialog(onDismissRequest = { onDismissRequest() }) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(200.dp)
+                .padding(16.dp),
+            shape = RoundedCornerShape(16.dp),
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Text(
+                    text = stringResource(R.string.add_number_to_contacts, callRegistry.number),
+                    modifier = Modifier.padding(16.dp),
+                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                ) {
+                    TextButton(
+                        onClick = { onDismissRequest() },
+                        modifier = Modifier.padding(8.dp),
+                    ) {
+                        Text(stringResource(R.string.dismiss))
+                    }
+                    TextButton(
+                        onClick = {
+                            val intent = Intent(ContactsContract.Intents.Insert.ACTION).apply {
+                                type = ContactsContract.RawContacts.CONTENT_TYPE
+                                putExtra(
+                                    ContactsContract.Intents.Insert.PHONE,
+                                    callRegistry.number
+                                )
+                                putExtra(
+                                    ContactsContract.Intents.Insert.NAME,
+                                    callRegistry.contactName
+                                )
+                            }
+                            onDismissRequest()
+                            context.startActivity(intent)
+                        },
+                        modifier = Modifier.padding(8.dp),
+                    ) {
+                        Text(stringResource(R.string.confirm))
+                    }
+                }
+            }
+        }
+    }
 }

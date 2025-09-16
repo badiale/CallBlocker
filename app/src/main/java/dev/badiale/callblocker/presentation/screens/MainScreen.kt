@@ -21,7 +21,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.toRoute
 import dev.badiale.callblocker.R
 import dev.badiale.callblocker.presentation.components.DrawerContent
 import dev.badiale.callblocker.services.PreferenceService
@@ -69,11 +68,7 @@ fun MainScreen() {
                 modifier = Modifier.padding(innerPadding)
             ) {
                 composable<CallLogScreenNavigation> {
-                    CallLogScreen(navController)
-                }
-                composable<CallLogDetailsNavigation> {
-                    val details = it.toRoute<CallLogDetailsNavigation>()
-                    CallLogDetailsScreen(logId = details.id)
+                    CallLogScreen()
                 }
                 composable<ConfigurationPermissionNavigation> {
                     ConfigurationPermissionScreen()
