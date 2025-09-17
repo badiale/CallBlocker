@@ -32,4 +32,5 @@
     <string name="dismiss">Cancelar</string>
     <string name="confirm">Confirmar</string>
     <string name="contact_photo">Foto do contato</string>
+    <string name="no_calls_received_yet">Nenhuma chamada recebida ainda</string>
 </resources>

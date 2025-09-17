@@ -100,6 +100,15 @@ fun CallLogScreen() {
 
     Column {
         LazyColumn(state = listState) {
+            if (callRegistries.isEmpty()) {
+                item {
+                    Text(
+                        text = stringResource(R.string.no_calls_received_yet),
+                        style = MaterialTheme.typography.titleLarge
+                    )
+                }
+            }
+
             items(callRegistries) { callRegistry ->
                 CallRegistryComposable(
                     callRegistry = callRegistry,
