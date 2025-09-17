@@ -21,6 +21,10 @@ class DatabaseService(context: Context) {
                         cachedPhotoUri text)
                     """
                 )
+            }, { db ->
+                db.execSQL(
+                    """ALTER TABLE CALL_LOG ADD COLUMN isContact integer not null default 0"""
+                )
             }
 
         )

@@ -50,6 +50,7 @@ class CallBlockerScreeningService : CallScreeningService() {
             callLogRepository.insert(
                 CallRegistry(
                     id = null,
+                    isContact = contact != null,
                     formattedNumber = callDetails.callerDisplayName,
                     number = number,
                     contactName = contact?.name,

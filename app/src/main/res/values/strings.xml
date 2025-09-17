@@ -28,7 +28,7 @@
     <string name="permission_not_granted">Permissão indisponível</string>
     <string name="first_run_title">Bem vindo</string>
     <string name="first_run_body">Para usar o aplicativo, ative as permissões necessárias.</string>
-    <string name="add_number_to_contacts">Adicionar número %1$s aos contatos?</string>
+    <string name="add_number_to_contacts">Adicionar aos contatos</string>
     <string name="dismiss">Cancelar</string>
     <string name="confirm">Confirmar</string>
     <string name="contact_photo">Foto do contato</string>

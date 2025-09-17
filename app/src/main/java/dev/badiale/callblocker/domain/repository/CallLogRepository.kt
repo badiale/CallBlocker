@@ -11,6 +11,7 @@ import java.util.Date
 
 data class CallRegistry(
     val id: Int?,
+    val isContact: Boolean,
     val formattedNumber: String?,
     val number: String,
     val contactName: String?,
@@ -23,6 +24,7 @@ class CallLogRepository(context: Context) {
     private companion object {
         const val TABLE_NAME = "CALL_LOG"
         const val COLUMN_ID = "id"
+        const val COLUMN_IS_CONTACT = "isContact"
         const val COLUMN_FORMATTED_NUMBER = "formattedNumber"
         const val COLUMN_NUMBER = "number"
         const val COLUMN_CONTACT_NAME = "contactName"
@@ -38,6 +40,7 @@ class CallLogRepository(context: Context) {
             TABLE_NAME,
             null,
             ContentValues().apply {
+                put(COLUMN_IS_CONTACT, call.isContact)
                 put(COLUMN_FORMATTED_NUMBER, call.formattedNumber)
                 put(COLUMN_NUMBER, call.number)
                 put(COLUMN_CONTACT_NAME, call.contactName)
@@ -77,6 +80,7 @@ class CallLogRepository(context: Context) {
             cursor.move(start)
 
             val columnIdxId = cursor.getColumnIndexOrThrow(COLUMN_ID)
+            val columnIdxIsContact = cursor.getColumnIndexOrThrow(COLUMN_IS_CONTACT)
             val columnIdxFormattedNumber = cursor.getColumnIndexOrThrow(COLUMN_FORMATTED_NUMBER)
             val columnIdxNumber = cursor.getColumnIndexOrThrow(COLUMN_NUMBER)
             val columnIdxContactName = cursor.getColumnIndexOrThrow(COLUMN_CONTACT_NAME)
@@ -87,6 +91,7 @@ class CallLogRepository(context: Context) {
             while (cursor.moveToNext() && count++ < maxResults) {
                 callLogList += CallRegistry(
                     id = cursor.getString(columnIdxId)!!.toInt(),
+                    isContact = cursor.getInt(columnIdxIsContact) == 1,
                     formattedNumber = cursor.getStringOrNull(columnIdxFormattedNumber),
                     number = cursor.getString(columnIdxNumber)!!,
                     contactName = cursor.getStringOrNull(columnIdxContactName),

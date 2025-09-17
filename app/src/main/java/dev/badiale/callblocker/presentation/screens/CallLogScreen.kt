@@ -18,7 +18,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -26,8 +25,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -46,7 +43,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import dev.badiale.callblocker.R
@@ -70,20 +66,10 @@ fun CallLogScreen() {
 
     val callLog = remember { mutableStateOf<List<CallRegistry>>(emptyList()) }
     val loading = remember { mutableStateOf(false) }
-    val openContactDetailsDialog = remember { mutableStateOf<CallRegistry?>(null) }
     val listState = rememberLazyListState()
 
     val hasMore by loading
     val callRegistries by callLog
-
-    when {
-        openContactDetailsDialog.value != null -> {
-            ContactDetailsDialog(
-                onDismissRequest = { openContactDetailsDialog.value = null },
-                callRegistry = openContactDetailsDialog.value!!
-            )
-        }
-    }
 
     LaunchedEffect(listState) {
         callLog.value = callLogRepository.findAll()
@@ -112,7 +98,7 @@ fun CallLogScreen() {
             items(callRegistries) { callRegistry ->
                 CallRegistryComposable(
                     callRegistry = callRegistry,
-                    onItemClick = { openContactDetailsDialog.value = callRegistry })
+                    onItemClick = {})
                 HorizontalDivider()
                 Spacer(Modifier.height(4.dp))
             }
@@ -148,7 +134,8 @@ fun CallRegistryComposable(callRegistry: CallRegistry, onItemClick: (CallRegistr
             )
             Column {
                 Text(
-                    text = callRegistry.contactName ?: callRegistry.formattedNumber ?: callRegistry.number,
+                    text = callRegistry.contactName ?: callRegistry.formattedNumber
+                    ?: callRegistry.number,
                     style = MaterialTheme.typography.bodyLarge
                 )
                 Row(
@@ -173,6 +160,33 @@ fun CallRegistryComposable(callRegistry: CallRegistry, onItemClick: (CallRegistr
                         text = formatDate(callRegistry.date),
                         style = MaterialTheme.typography.bodySmall
                     )
+                }
+                if (!callRegistry.isContact) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End,
+                    ) {
+                        TextButton(
+                            onClick = {
+                                val intent =
+                                    Intent(ContactsContract.Intents.Insert.ACTION).apply {
+                                        type = ContactsContract.RawContacts.CONTENT_TYPE
+                                        putExtra(
+                                            ContactsContract.Intents.Insert.PHONE,
+                                            callRegistry.number
+                                        )
+                                        putExtra(
+                                            ContactsContract.Intents.Insert.NAME,
+                                            callRegistry.contactName
+                                        )
+                                    }
+                                context.startActivity(intent)
+                            },
+                            modifier = Modifier.padding(4.dp),
+                        ) {
+                            Text(stringResource(R.string.add_number_to_contacts))
+                        }
+                    }
                 }
             }
         }
@@ -212,63 +226,4 @@ fun formatDate(date: Date): String {
         .withZone(ZoneId.systemDefault())
 
     return formatter.format(Instant.ofEpochMilli(date.time))
-}
-
-@Composable
-fun ContactDetailsDialog(onDismissRequest: () -> Unit, callRegistry: CallRegistry) {
-    val context = LocalContext.current
-
-    Dialog(onDismissRequest = { onDismissRequest() }) {
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(200.dp)
-                .padding(16.dp),
-            shape = RoundedCornerShape(16.dp),
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize(),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Text(
-                    text = stringResource(R.string.add_number_to_contacts, callRegistry.number),
-                    modifier = Modifier.padding(16.dp),
-                )
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center,
-                ) {
-                    TextButton(
-                        onClick = { onDismissRequest() },
-                        modifier = Modifier.padding(8.dp),
-                    ) {
-                        Text(stringResource(R.string.dismiss))
-                    }
-                    TextButton(
-                        onClick = {
-                            val intent = Intent(ContactsContract.Intents.Insert.ACTION).apply {
-                                type = ContactsContract.RawContacts.CONTENT_TYPE
-                                putExtra(
-                                    ContactsContract.Intents.Insert.PHONE,
-                                    callRegistry.number
-                                )
-                                putExtra(
-                                    ContactsContract.Intents.Insert.NAME,
-                                    callRegistry.contactName
-                                )
-                            }
-                            onDismissRequest()
-                            context.startActivity(intent)
-                        },
-                        modifier = Modifier.padding(8.dp),
-                    ) {
-                        Text(stringResource(R.string.confirm))
-                    }
-                }
-            }
-        }
-    }
 }
