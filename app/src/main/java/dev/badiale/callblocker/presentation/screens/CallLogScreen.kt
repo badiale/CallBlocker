@@ -77,7 +77,7 @@ fun CallLogScreen() {
         snapshotFlow { listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index }
             .collect { lastVisibleItem ->
                 if (lastVisibleItem != null && lastVisibleItem >= callRegistries.size - 3 && hasMore) {
-                    val findAll = callLogRepository.findAll(start = lastVisibleItem)
+                    val findAll = callLogRepository.findAll(start = callRegistries.size)
                     loading.value = findAll.isNotEmpty()
                     callLog.value = callRegistries + findAll
                 }
