@@ -13,6 +13,8 @@ import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.core.database.getStringOrNull
 import androidx.core.net.toUri
+import com.google.i18n.phonenumbers.NumberParseException
+import com.google.i18n.phonenumbers.PhoneNumberUtil
 import dev.badiale.callblocker.domain.repository.CallLogRepository
 import dev.badiale.callblocker.domain.repository.CallRegistry
 import dev.badiale.callblocker.services.PreferenceService
@@ -78,34 +80,77 @@ class CallBlockerScreeningService : CallScreeningService() {
         ) {
             return null;
         }
+
+        val searchVariations = getPhoneNumberVariations(number)
         val resolver: ContentResolver = contentResolver
-        val uri: Uri = ContactsContract.PhoneLookup.CONTENT_FILTER_URI.buildUpon()
-            .appendPath(number)
-            .build()
-        resolver.query(
-            uri,
-            arrayOf(
-                ContactsContract.Contacts.DISPLAY_NAME,
-                ContactsContract.Contacts.PHOTO_THUMBNAIL_URI
-            ),
-            null,
-            null,
-            null
-        )
-            ?.use { cursor ->
-                if (!cursor.moveToNext()) {
-                    return null
+
+        for (searchNum in searchVariations) {
+            val uri: Uri = ContactsContract.PhoneLookup.CONTENT_FILTER_URI.buildUpon()
+                .appendPath(number)
+                .build()
+            resolver.query(
+                uri,
+                arrayOf(
+                    ContactsContract.Contacts.DISPLAY_NAME,
+                    ContactsContract.Contacts.PHOTO_THUMBNAIL_URI
+                ),
+                null,
+                null,
+                null
+            )
+                ?.use { cursor ->
+                    if (cursor.moveToNext()) {
+                        val columnIndexDisplayName =
+                            cursor.getColumnIndexOrThrow(ContactsContract.Contacts.DISPLAY_NAME)
+                        val columnIndexPhotoUri =
+                            cursor.getColumnIndexOrThrow(ContactsContract.Contacts.PHOTO_THUMBNAIL_URI)
+                        return Contact(
+                            name = cursor.getStringOrNull(columnIndexDisplayName)
+                                ?: number,
+                            photoUri = cursor.getStringOrNull(columnIndexPhotoUri)?.toUri()
+                        )
+                    }
                 }
-                val columnIndexDisplayName =
-                    cursor.getColumnIndexOrThrow(ContactsContract.Contacts.DISPLAY_NAME)
-                val columnIndexPhotoUri =
-                    cursor.getColumnIndexOrThrow(ContactsContract.Contacts.PHOTO_THUMBNAIL_URI)
-                return Contact(
-                    name = cursor.getStringOrNull(columnIndexDisplayName)
-                        ?: number,
-                    photoUri = cursor.getStringOrNull(columnIndexPhotoUri)?.toUri()
-                )
-            }
+        }
         return null
+    }
+
+    fun getPhoneNumberVariations(number: String): List<String> {
+        val searchVariations = mutableListOf<String>()
+
+        val onlyNumbers = number.replace(Regex("\\D"), "")
+        if (onlyNumbers.isNotEmpty()) {
+            searchVariations.add(onlyNumbers)
+        }
+
+        try {
+            val phoneUtil = PhoneNumberUtil.getInstance()
+            val phoneNumber = phoneUtil.parse(number, "BR")
+
+            val nationalNumber = phoneUtil.format(phoneNumber, PhoneNumberUtil.PhoneNumberFormat.NATIONAL)
+                .replace(Regex("\\D"), "")
+
+            if (nationalNumber.isNotEmpty() && !searchVariations.contains(nationalNumber)) {
+                searchVariations.add(nationalNumber)
+            }
+
+            // 3. Apenas o número local (últimos 8 ou 9 dígitos), caso o contato esteja salvo sem DDD
+            if (nationalNumber.length > 8) {
+                // Pega os últimos 9 dígitos (geralmente celular com 9º dígito) ou 8 (fixo/antigo)
+                val localNumber = nationalNumber.takeLast(9)
+                if (!searchVariations.contains(localNumber)) {
+                    searchVariations.add(localNumber)
+                }
+            }
+        } catch (e: NumberParseException) {
+            // Fallback caso o parsing falhe: usa os últimos 9 dígitos da string pura
+            if (onlyNumbers.length > 9) {
+                val fallbackLocal = onlyNumbers.takeLast(9)
+                if (!searchVariations.contains(fallbackLocal)) {
+                    searchVariations.add(fallbackLocal)
+                }
+            }
+        }
+        return searchVariations;
     }
 }
