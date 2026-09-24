@@ -15,7 +15,7 @@ android {
         applicationId = "dev.badiale.callblocker"
         minSdk = 28
         targetSdk = 36
-        versionCode = (Date().time / 1000).toInt()
+        versionCode = (Date().time / (60 * 1000)).toInt()
         versionName = "1.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
